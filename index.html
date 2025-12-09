@@ -388,6 +388,7 @@
             isPaused: false,
             pauseStartTime: null,
             lastScorer: null,
+            lastSpeedIncrease: 0, // Track when ball speed last increased
         };
 
         // ===== AI OPPONENT =====
@@ -549,6 +550,7 @@
                 this.ball.vy = (Math.random() - 0.5) * this.ballSpeed;
                 this.scoreRegistered = false;
                 gameState.gameStartTime = Date.now();
+                gameState.lastSpeedIncrease = 0; // Reset speed increase timer after goal
             },
 
             update() {
@@ -796,6 +798,15 @@
             if (gameState.gameStartTime) {
                 gameState.elapsedSeconds = Math.floor((Date.now() - gameState.gameStartTime) / 1000);
                 
+                // Progressive speed increase every 15 seconds
+                if (gameState.elapsedSeconds >= gameState.lastSpeedIncrease + 15) {
+                    if (pong.ballSpeed < pong.ballSpeedMax) {
+                        pong.ballSpeed += 0.3; // Increase speed by 0.3
+                        pong.ballSpeed = Math.min(pong.ballSpeed, pong.ballSpeedMax); // Cap at max
+                        gameState.lastSpeedIncrease = gameState.elapsedSeconds;
+                    }
+                }
+                
                 const minutes = Math.floor(gameState.elapsedSeconds / 60);
                 const seconds = gameState.elapsedSeconds % 60;
                 
@@ -916,6 +927,7 @@
 
             gameState.gameStarted = true;
             gameState.gameStartTime = Date.now();
+            gameState.lastSpeedIncrease = 0; // Initialize speed increase timer
             
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
