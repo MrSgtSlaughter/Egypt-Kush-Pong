@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kush vs Egypt - Pong</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+        }
+
+        /* Title Screen */
+        #titleScreen {
+            background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+            color: #1a1a2e;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #titleScreen h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #titleScreen .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        #titleScreen .historical-context {
+            background: rgba(26, 26, 46, 0.8);
+            color: #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        #titleScreen .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: left;
+            display: inline-block;
+            font-size: 0.9em;
+        }
+
+        #titleScreen .instructions h3 {
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        #titleScreen .instructions h3:first-child {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group input {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #1a1a2e;
+            border: 2px solid #1a1a2e;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(26, 26, 46, 0.6);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-start {
+            background: #1a1a2e;
+            color: #d4af37;
+            margin-top: 20px;
+        }
+
+        .btn-start:hover {
+            background: #16213e;
+            transform: scale(1.05);
+        }
+
+        .btn-start:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-text {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #1a1a2e;
+            min-height: 30px;
+        }
+
+        .status-text.waiting {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            display: none;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #d4af37;
+        }
+
+        .historical-banner {
+            background: rgba(212, 175, 55, 0.2);
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .player-info {
+            text-align: center;
+            flex: 1;
+        }
+
+        .player-label {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #d4af37;
+        }
+
+        .player-name {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .divider {
+            text-align: center;
+            flex: 0 0 auto;
+            font-size: 2em;
+            color: #d4af37;
+            margin: 0 20px;
+        }
+
+        canvas {
+            display: block;
+            background: #0a0a0a;
+            border: 3px solid #d4af37;
+            margin: 20px auto;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+        }
+
+        .game-info {
+            text-align: center;
+            font-size: 0.95em;
+            color: #aaa;
+            margin-top: 15px;
+        }
+
+        .game-info.disconnected {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        /* Mode Selection Screen */
+        #modeScreen {
+            background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+            color: #1a1a2e;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #modeScreen h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .mode-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 30px;
+            background: #1a1a2e;
+            color: #d4af37;
+            border: 2px solid #1a1a2e;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            background: #16213e;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mode-btn-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        /* Waiting Screen */
+        #waitingScreen {
+            display: none;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #waitingScreen h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #d4af37;
+        }
+
+        .spinner {
+            border: 4px solid rgba(212, 175, 55, 0.3);
+            border-top: 4px solid #d4af37;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #waitingScreen .waiting-text {
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #d4af37;
+        }
+
+        .btn-cancel {
+            background: #666;
+            color: #fff;
+            margin-top: 30px;
+        }
+
+        .btn-cancel:hover {
+            background: #555;
+        }
+
+        @media (max-width: 600px) {
+            #titleScreen h1 {
+                font-size: 1.8em;
+            }
+
+            #titleScreen .subtitle {
+                font-size: 1em;
+            }
+
+            #titleScreen .historical-context {
+                font-size: 0.85em;
+            }
+
+            .scoreboard {
+                flex-wrap: wrap;
+            }
+
+            .divider {
+                flex-basis: 100%;
+                margin: 10px 0;
+            }
+
+            .score-display {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Mode Selection Screen -->
+        <div id="modeScreen">
+            <h1>⚔️ Kush vs Egypt ⚔️</h1>
+            <p class="subtitle" style="margin-bottom: 30px;">Choose Your Challenge</p>
+            
+            <div class="mode-buttons">
+                <button class="mode-btn" id="multiplayerBtn">
+                    <div class="mode-btn-icon">👥</div>
+                    <div>Multiplayer</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">Challenge a Classmate</div>
+                </button>
+                <button class="mode-btn" id="singleplayerBtn">
+                    <div class="mode-btn-icon">🤖</div>
+                    <div>Single Player</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">Face the AI</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Title Screen -->
+        <div id="titleScreen" style="display: none;">
+            <h1>⚔️ Kush vs Egypt ⚔️</h1>
+            <p class="subtitle">A Pong Game About Ancient Rivalry</p>
+            
+            <div class="historical-context">
+                <strong>Historical Context:</strong> For centuries, the kingdoms of Kush and Egypt competed for control of the Nile Valley. Their relationship was complex—sometimes rivals, sometimes allies—but always influential to each other's survival and growth.
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+            </div>
+
+            <div class="instructions" id="instructions-info">
+                <h3>How to Play:</h3>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Left Paddle (Kush):</strong> W and S keys to move up and down</li>
+                    <li><strong>Right Paddle (Egypt):</strong> Up and Down arrow keys to move</li>
+                    <li>First player to defend their side and score wins points</li>
+                    <li>You'll have 10 minutes per class period to play</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-start" id="startBtn" disabled>Find a Match</button>
+            <div class="status-text" id="statusText"></div>
+        </div>
+
+        <!-- Waiting Screen -->
+        <div id="waitingScreen">
+            <h2>Finding Your Opponent...</h2>
+            <div class="spinner"></div>
+            <p class="waiting-text" id="waitingText">Searching for another player...</p>
+            <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen">
+            <div class="game-header">
+                <h2>⚔️ Kush vs Egypt ⚔️</h2>
+                <div class="historical-banner" id="contextBanner">
+                    The Nile Valley competition: Every point is a victory in the eternal struggle for dominance.
+                </div>
+            </div>
+
+            <div class="scoreboard">
+                <div class="player-info">
+                    <div class="player-label">🏜️ KUSH</div>
+                    <div class="player-name" id="leftPlayerName">Player 1</div>
+                    <div class="score-display" id="leftScore">0</div>
+                </div>
+                <div class="divider">VS</div>
+                <div class="player-info">
+                    <div class="player-label">🏛️ EGYPT</div>
+                    <div class="player-name" id="rightPlayerName">Player 2</div>
+                    <div class="score-display" id="rightScore">0</div>
+                </div>
+            </div>
+
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+            <div class="game-info" id="gameInfo">
+                Connected • Use W/S for left paddle, Arrows for right paddle
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ===== SUPABASE CONFIG =====
+        const SUPABASE_URL = 'https://vfyyqlmelywqudxmwobl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_SaeFDq1WCYy7-lsYoEtwCw_PbGInrKf';
+        
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ===== GAME STATE =====
+        const gameState = {
+            playerName: '',
+            playerId: Math.random().toString(36).substr(2, 9),
+            gameId: null,
+            isLeftPaddle: null,
+            isConnected: false,
+            opponentName: '',
+            leftScore: 0,
+            rightScore: 0,
+            gameStarted: false,
+            gameMode: null, // 'multiplayer' or 'singleplayer'
+            gameStartTime: null,
+            elapsedSeconds: 0,
+            lastSpeedIncrease: 0,
+            isPaused: false,
+            pauseStartTime: null,
+            lastScorer: null, // 'left' or 'right'
+        };
+
+        // ===== AI OPPONENT =====
+        const ai = {
+            difficulty: 0.6, // 0-1 scale, higher = harder
+            reactionTime: 0, // Counter for delayed reaction
+            targetY: 200,
+            
+            update(ballX, ballY, paddleY) {
+                // AI has delayed reaction time to make it beatable
+                this.reactionTime--;
+                
+                if (this.reactionTime <= 0) {
+                    // Recalculate target every 10 frames
+                    if (ballX > 400) { // Ball coming toward AI
+                        this.targetY = ballY;
+                    }
+                    this.reactionTime = Math.random() * 10 + 5;
+                }
+
+                // Move paddle toward target with variable speed based on difficulty
+                const speed = pong.paddles.right.speed;
+                const paddleCenter = paddleY + pong.paddles.right.height / 2;
+                const distance = this.targetY - paddleCenter;
+
+                if (Math.abs(distance) > speed * this.difficulty) {
+                    pong.paddles.right.vy = distance > 0 ? speed : -speed;
+                } else {
+                    pong.paddles.right.vy = (distance / 20) * speed;
+                }
+            }
+        };
+
+        // ===== PONG GAME ENGINE =====
+        // ===== AUDIO SYSTEM =====
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Synthesized crowd cheering sound
+        function loadCrowdAudio() {
+            // No loading needed - crowd sounds are synthesized on demand
+        }
+
+        function playSoundFrequency(frequency, duration, type = 'sine') {
+            try {
+                // Resume audio context if suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = type;
+                osc.frequency.value = frequency;
+                
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch(e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function playPaddleSound() {
+            // Short beep when paddle hits ball
+            playSoundFrequency(800, 0.05);
+        }
+
+        function playCrowdSound() {
+            // Synthesized crowd cheering effect - multiple tones for organic sound
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const now = audioContext.currentTime;
+                const duration = 0.8;
+                
+                // Create multiple overlapping voices for crowd effect
+                const baseFrequencies = [180, 200, 220, 240]; // Different voice pitches
+                
+                baseFrequencies.forEach((baseFreq, index) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.type = 'square';
+                    // Vary frequency slightly for each voice
+                    osc.frequency.value = baseFreq + (Math.random() * 20);
+                    
+                    // Stagger the start times for a "building" effect
+                    const startDelay = index * 0.05;
+                    gain.gain.setValueAtTime(0, now + startDelay);
+                    gain.gain.linearRampToValueAtTime(0.15, now + startDelay + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + startDelay + duration);
+                    
+                    osc.start(now + startDelay);
+                    osc.stop(now + startDelay + duration);
+                });
+                
+                // Add some higher frequency "excitement" tones
+                const excitementFreqs = [600, 700, 800];
+                excitementFreqs.forEach((freq) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq + (Math.random() * 50);
+                    
+                    const delay = 0.2 + Math.random() * 0.1;
+                    gain.gain.setValueAtTime(0, now + delay);
+                    gain.gain.linearRampToValueAtTime(0.08, now + delay + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.4);
+                    
+                    osc.start(now + delay);
+                    osc.stop(now + delay + 0.4);
+                });
+            } catch(e) {
+                console.log('Crowd sound error:', e);
+            }
+        }
+
+        function playStartSound() {
+            // Ascending tones for game start
+            playSoundFrequency(400, 0.15, 'square');
+            setTimeout(() => playSoundFrequency(600, 0.15, 'square'), 150);
+            setTimeout(() => playSoundFrequency(800, 0.15, 'square'), 300);
+        }
+
+        function playWinSound() {
+            // Victory fanfare
+            playSoundFrequency(523, 0.2); // C5
+            setTimeout(() => playSoundFrequency(659, 0.2), 200); // E5
+            setTimeout(() => playSoundFrequency(784, 0.4), 400); // G5
+        }
+
+        // ===== GAME LOGIC =====
+        const pong = {
+            canvas: document.getElementById('gameCanvas'),
+            ctx: null,
+            width: 800,
+            height: 400,
+            ballSpeed: 3,
+            ballSpeedMax: 6,
+
+            ball: {
+                x: 400,
+                y: 200,
+                radius: 6,
+                vx: 5,
+                vy: 3,
+            },
+
+            scoreRegistered: false,
+
+            paddles: {
+                left: { x: 20, y: 175, width: 15, height: 50, vy: 0, speed: 6 },
+                right: { x: 765, y: 175, width: 15, height: 50, vy: 0, speed: 6 }
+            },
+
+            init() {
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.resetBall();
+            },
+
+            resetBall() {
+                this.ball.x = this.width / 2;
+                this.ball.y = this.height / 2;
+                this.ball.vx = (Math.random() > 0.5 ? 1 : -1) * this.ballSpeed;
+                this.ball.vy = (Math.random() - 0.5) * this.ballSpeed;
+                this.scoreRegistered = false;
+                // Reset timer after goal
+                gameState.gameStartTime = Date.now();
+            },
+
+            update() {
+                // Only the left player (isLeftPaddle=true) updates ball physics
+                // Right player just receives ball position from polling
+                
+                if (gameState.gameMode === 'multiplayer' && !gameState.isLeftPaddle) {
+                    // Right player: DON'T update ball locally, just update paddles
+                    this.updatePaddle('left');
+                    this.updatePaddle('right');
+                    return;
+                }
+
+                // Left player: full physics update
+                this.ball.x += this.ball.vx;
+                this.ball.y += this.ball.vy;
+
+                if (this.ball.y - this.ball.radius < 0 || this.ball.y + this.ball.radius > this.height) {
+                    this.ball.vy *= -1;
+                    this.ball.y = Math.max(this.ball.radius, Math.min(this.height - this.ball.radius, this.ball.y));
+                }
+
+                this.checkPaddleCollision('left');
+                this.checkPaddleCollision('right');
+
+                if (this.ball.x - this.ball.radius < 0) {
+                    if (!this.scoreRegistered) {
+                        gameState.rightScore++;
+                        gameState.lastScorer = 'right';
+                        gameState.isPaused = true;
+                        gameState.pauseStartTime = Date.now();
+                        playCrowdSound();
+                        syncScore();
+                        this.scoreRegistered = true;
+                    }
+                } else if (this.ball.x + this.ball.radius > this.width) {
+                    if (!this.scoreRegistered) {
+                        gameState.leftScore++;
+                        gameState.lastScorer = 'left';
+                        gameState.isPaused = true;
+                        gameState.pauseStartTime = Date.now();
+                        playCrowdSound();
+                        syncScore();
+                        this.scoreRegistered = true;
+                    }
+                }
+
+                this.updatePaddle('left');
+                this.updatePaddle('right');
+            },
+
+            checkPaddleCollision(side) {
+                const paddle = this.paddles[side];
+                const ballRadius = this.ball.radius;
+
+                if (side === 'left') {
+                    if (this.ball.x - ballRadius < paddle.x + paddle.width &&
+                        this.ball.y > paddle.y &&
+                        this.ball.y < paddle.y + paddle.height) {
+                        this.ball.vx = Math.abs(this.ball.vx);
+                        this.ball.x = paddle.x + paddle.width + ballRadius;
+                        this.ball.vy += paddle.vy * 0.2;
+                        playPaddleSound();
+                    }
+                } else {
+                    if (this.ball.x + ballRadius > paddle.x &&
+                        this.ball.y > paddle.y &&
+                        this.ball.y < paddle.y + paddle.height) {
+                        this.ball.vx = -Math.abs(this.ball.vx);
+                        this.ball.x = paddle.x - ballRadius;
+                        this.ball.vy += paddle.vy * 0.2;
+                        playPaddleSound();
+                    }
+                }
+
+                // Cap ball speed
+                const speed = Math.sqrt(this.ball.vx ** 2 + this.ball.vy ** 2);
+                if (speed > this.ballSpeedMax) {
+                    this.ball.vx = (this.ball.vx / speed) * this.ballSpeedMax;
+                    this.ball.vy = (this.ball.vy / speed) * this.ballSpeedMax;
+                }
+            },
+
+            updatePaddle(side) {
+                const paddle = this.paddles[side];
+                paddle.y += paddle.vy;
+                paddle.y = Math.max(0, Math.min(this.height - paddle.height, paddle.y));
+            },
+
+            draw() {
+                // Clear canvas
+                this.ctx.fillStyle = '#0a0a0a';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw Egyptian background elements
+                this.drawNileRiver();
+                this.drawPyramids();
+                this.drawElephants();
+                this.drawHieroglyphics();
+
+                // Center line
+                this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+                this.ctx.setLineDash([10, 10]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.width / 2, 0);
+                this.ctx.lineTo(this.width / 2, this.height);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+
+                // Draw paddles
+                this.ctx.fillStyle = '#d4af37';
+                this.ctx.fillRect(this.paddles.left.x, this.paddles.left.y, this.paddles.left.width, this.paddles.left.height);
+                this.ctx.fillRect(this.paddles.right.x, this.paddles.right.y, this.paddles.right.width, this.paddles.right.height);
+
+                // Draw ball
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+            },
+
+            drawNileRiver() {
+                // Nile River flowing horizontally
+                this.ctx.fillStyle = 'rgba(100, 180, 255, 0.15)';
+                this.ctx.beginPath();
+                const riverY = this.height * 0.75;
+                const riverHeight = 40;
+                
+                // Wavy river effect
+                let waveX = 0;
+                this.ctx.moveTo(0, riverY);
+                for (let x = 0; x <= this.width; x += 10) {
+                    const wave = Math.sin(x * 0.01) * 5;
+                    this.ctx.lineTo(x, riverY + wave);
+                }
+                this.ctx.lineTo(this.width, riverY + riverHeight);
+                this.ctx.lineTo(0, riverY + riverHeight);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // River outline
+                this.ctx.strokeStyle = 'rgba(100, 180, 255, 0.4)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, riverY);
+                for (let x = 0; x <= this.width; x += 10) {
+                    const wave = Math.sin(x * 0.01) * 5;
+                    this.ctx.lineTo(x, riverY + wave);
+                }
+                this.ctx.stroke();
+            },
+
+            drawPyramids() {
+                // Left side pyramids (Kush)
+                this.drawPyramid(100, 120, 60, 'rgba(212, 175, 55, 0.25)');
+                this.drawPyramid(150, 140, 40, 'rgba(212, 175, 55, 0.2)');
+                
+                // Right side pyramids (Egypt)
+                this.drawPyramid(this.width - 100, 120, 60, 'rgba(212, 175, 55, 0.25)');
+                this.drawPyramid(this.width - 150, 140, 40, 'rgba(212, 175, 55, 0.2)');
+            },
+
+            drawPyramid(x, y, size, color) {
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, y); // Top
+                this.ctx.lineTo(x - size, y + size); // Bottom left
+                this.ctx.lineTo(x + size, y + size); // Bottom right
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Pyramid outline
+                this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
+            },
+
+            drawElephants() {
+                // Left elephant (Kush side)
+                this.drawElephant(80, 250, 1, 'rgba(150, 120, 100, 0.3)');
+                
+                // Right elephant (Egypt side)
+                this.drawElephant(this.width - 80, 250, -1, 'rgba(150, 120, 100, 0.3)');
+            },
+
+            drawElephant(x, y, scale, color) {
+                this.ctx.fillStyle = color;
+                
+                // Body
+                this.ctx.beginPath();
+                this.ctx.ellipse(x, y, 20, 25, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Head
+                this.ctx.beginPath();
+                this.ctx.arc(x + (15 * scale), y - 15, 12, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Trunk (curved)
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x + (10 * scale), y + 10);
+                this.ctx.quadraticCurveTo(x + (5 * scale), y + 30, x + (8 * scale), y + 45);
+                this.ctx.stroke();
+                
+                // Ears
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.ellipse(x - (5 * scale), y - 5, 10, 15, 0.3 * scale, 0, Math.PI * 2);
+                this.ctx.fill();
+            },
+
+            drawHieroglyphics() {
+                // Draw Egyptian-style symbols/hieroglyphics as decorative elements
+                const hieroglyphs = ['◯', '⬟', '◎', '▲', '◆'];
+                
+                // Top left corner
+                this.ctx.fillStyle = 'rgba(212, 175, 55, 0.25)';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                for (let i = 0; i < 3; i++) {
+                    this.ctx.fillText(hieroglyphs[i % hieroglyphs.length], 30 + i * 25, 30);
+                }
+                
+                // Top right corner
+                for (let i = 0; i < 3; i++) {
+                    this.ctx.fillText(hieroglyphs[(i + 1) % hieroglyphs.length], this.width - 30 - i * 25, 30);
+                }
+                
+                // Bottom left (above river)
+                for (let i = 0; i < 4; i++) {
+                    this.ctx.fillText(hieroglyphs[(i + 2) % hieroglyphs.length], 25 + i * 30, this.height - 60);
+                }
+                
+                // Bottom right (above river)
+                for (let i = 0; i < 4; i++) {
+                    this.ctx.fillText(hieroglyphs[(i + 3) % hieroglyphs.length], this.width - 25 - i * 30, this.height - 60);
+                }
+
+                // Draw some line hieroglyphics
+                this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+                this.ctx.lineWidth = 1;
+                
+                // Left side vertical script
+                this.ctx.beginPath();
+                this.ctx.moveTo(15, 100);
+                this.ctx.lineTo(15, 300);
+                this.ctx.stroke();
+                
+                // Right side vertical script
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.width - 15, 100);
+                this.ctx.lineTo(this.width - 15, 300);
+                this.ctx.stroke();
+            }
+        };
+
+        // ===== INPUT HANDLING =====
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            e.preventDefault();
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            e.preventDefault();
+        });
+
+        function updatePaddleInput() {
+            if (gameState.isLeftPaddle) {
+                if (keys['w'] || keys['W']) pong.paddles.left.vy = -pong.paddles.left.speed;
+                else if (keys['s'] || keys['S']) pong.paddles.left.vy = pong.paddles.left.speed;
+                else pong.paddles.left.vy = 0;
+            } else {
+                if (keys['ArrowUp']) pong.paddles.right.vy = -pong.paddles.right.speed;
+                else if (keys['ArrowDown']) pong.paddles.right.vy = pong.paddles.right.speed;
+                else pong.paddles.right.vy = 0;
+            }
+        }
+
+        // ===== SUPABASE MATCHMAKING =====
+        async function enterMatchmaking() {
+            gameState.playerName = document.getElementById('playerName').value.trim();
+            if (!gameState.playerName) {
+                document.getElementById('statusText').textContent = 'Please enter your name';
+                return;
+            }
+
+            showWaitingScreen();
+            
+            try {
+                // Check if another player is waiting
+                const { data: waiting, error: fetchError } = await supabase
+                    .from('waiting_players')
+                    .select('*')
+                    .limit(1);
+
+                if (fetchError) throw fetchError;
+
+                if (waiting && waiting.length > 0) {
+                    // Match found! Create game with waiting player
+                    const opponent = waiting[0];
+                    const gameId = Math.random().toString(36).substr(2, 9);
+                    
+                    const gameData = {
+                        id: gameId,
+                        game_id: gameId,
+                        left_player: opponent.player_id,
+                        left_player_name: opponent.player_name,
+                        right_player: gameState.playerId,
+                        right_player_name: gameState.playerName,
+                        left_score: 0,
+                        right_score: 0,
+                        left_paddle_y: 175,
+                        right_paddle_y: 175,
+                        ball_x: 400,
+                        ball_y: 200,
+                        ball_vx: 5,
+                        ball_vy: 3,
+                        started: true
+                    };
+
+                    // Create the game
+                    const { error: insertError } = await supabase
+                        .from('games')
+                        .insert([gameData]);
+
+                    if (insertError) throw insertError;
+
+                    // Remove opponent from waiting
+                    await supabase
+                        .from('waiting_players')
+                        .delete()
+                        .eq('player_id', opponent.player_id);
+
+                    // Start game (as right player)
+                    gameState.gameId = gameId;
+                    gameState.isLeftPaddle = false;
+                    gameState.opponentName = opponent.player_name;
+                    startGame();
+                } else {
+                    // Add to waiting list
+                    const { error: insertError } = await supabase
+                        .from('waiting_players')
+                        .insert([{
+                            player_id: gameState.playerId,
+                            player_name: gameState.playerName
+                        }]);
+
+                    if (insertError) throw insertError;
+
+                    // Listen for new games with polling
+                    const waitingPollInterval = setInterval(async () => {
+                        const { data: games } = await supabase
+                            .from('games')
+                            .select('*');
+
+                        if (games) {
+                            const myGame = games.find(g => 
+                                g.left_player === gameState.playerId || g.right_player === gameState.playerId
+                            );
+
+                            if (myGame && !gameState.gameStarted) {
+                                gameState.gameId = myGame.game_id;
+                                gameState.isLeftPaddle = myGame.left_player === gameState.playerId;
+                                gameState.opponentName = gameState.isLeftPaddle ? myGame.right_player_name : myGame.left_player_name;
+                                
+                                clearInterval(waitingPollInterval);
+                                await supabase.from('waiting_players').delete().eq('player_id', gameState.playerId);
+                                startGame();
+                            }
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Matchmaking error details:', error);
+                console.error('Error message:', error.message);
+                console.error('Error code:', error.code);
+                document.getElementById('statusText').textContent = 'Error finding match. Try again.';
+                showTitleScreen();
+            }
+        }
+
+        function startGame() {
+            gameState.gameStarted = true;
+            gameState.gameStartTime = Date.now();
+            gameState.lastSpeedIncrease = 0;
+            
+            // Resume audio context for user interaction
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // Load crowd audio when game starts
+            loadCrowdAudio();
+            
+            pong.init();
+            playStartSound();
+            showGameScreen();
+            syncUI();
+
+            // Poll for game updates in multiplayer
+            if (gameState.gameMode === 'multiplayer' && gameState.gameId) {
+                startPollingGameUpdates();
+            }
+
+            // Game loop
+            gameLoop();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('leftScore').textContent = gameState.leftScore;
+            document.getElementById('rightScore').textContent = gameState.rightScore;
+        }
+
+        function gameLoop() {
+            // Update game timer
+            if (gameState.gameStartTime) {
+                gameState.elapsedSeconds = Math.floor((Date.now() - gameState.gameStartTime) / 1000);
+                
+                // Update timer display
+                const minutes = Math.floor(gameState.elapsedSeconds / 60);
+                const seconds = gameState.elapsedSeconds % 60;
+                document.getElementById('gameInfo').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')} • Use W/S for left paddle, Arrows for right paddle`;
+            }
+            
+            // Handle goal pause
+            if (gameState.isPaused) {
+                const pauseElapsed = Date.now() - gameState.pauseStartTime;
+                if (pauseElapsed >= 2000) {
+                    // Resume game after 2 seconds
+                    gameState.isPaused = false;
+                    pong.resetBall();
+                } else {
+                    // Draw game background without the ball
+                    const ctx = pong.ctx;
+                    ctx.fillStyle = '#0a0a0a';
+                    ctx.fillRect(0, 0, pong.width, pong.height);
+
+                    // Center line
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+                    ctx.setLineDash([10, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(pong.width / 2, 0);
+                    ctx.lineTo(pong.width / 2, pong.height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Draw paddles
+                    ctx.fillStyle = '#d4af37';
+                    ctx.fillRect(pong.paddles.left.x, pong.paddles.left.y, pong.paddles.left.width, pong.paddles.left.height);
+                    ctx.fillRect(pong.paddles.right.x, pong.paddles.right.y, pong.paddles.right.width, pong.paddles.right.height);
+                    
+                    // Update HTML scoreboard
+                    updateScoreDisplay();
+                    
+                    // Draw GOAL text (ball is hidden now)
+                    ctx.font = 'bold 120px Arial';
+                    ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('GOAL!', pong.width / 2, pong.height / 2);
+                    
+                    // Draw score update
+                    ctx.font = 'bold 60px Arial';
+                    ctx.fillStyle = 'rgba(0, 255, 0, 0.9)';
+                    ctx.fillText(`${gameState.leftScore} - ${gameState.rightScore}`, pong.width / 2, pong.height / 2 + 100);
+                    
+                    requestAnimationFrame(gameLoop);
+                    return;
+                }
+            }
+            
+            updatePaddleInput();
+            
+            // AI opponent update
+            if (gameState.gameMode === 'singleplayer') {
+                ai.update(pong.ball.x, pong.ball.y, pong.paddles.right.y);
+            }
+            
+            pong.update();
+            pong.draw();
+            
+            // Update HTML scoreboard
+            updateScoreDisplay();
+            
+            // Only sync to Firebase in multiplayer mode
+            if (gameState.gameMode === 'multiplayer') {
+                syncGameState();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        async function syncGameState() {
+            if (!gameState.gameId || gameState.gameMode !== 'multiplayer') return;
+
+            const updateData = {
+                left_score: gameState.leftScore,
+                right_score: gameState.rightScore,
+            };
+
+            if (gameState.isLeftPaddle) {
+                updateData.left_paddle_y = pong.paddles.left.y;
+                updateData.ball_x = pong.ball.x;
+                updateData.ball_y = pong.ball.y;
+                updateData.ball_vx = pong.ball.vx;
+                updateData.ball_vy = pong.ball.vy;
+            } else {
+                updateData.right_paddle_y = pong.paddles.right.y;
+            }
+
+            try {
+                await supabase
+                    .from('games')
+                    .update(updateData)
+                    .eq('game_id', gameState.gameId);
+            } catch (error) {
+                console.error('Sync error:', error);
+            }
+        }
+
+        async function syncScore() {
+            if (!gameState.gameId || gameState.gameMode !== 'multiplayer') return;
+            
+            try {
+                await supabase
+                    .from('games')
+                    .update({
+                        left_score: gameState.leftScore,
+                        right_score: gameState.rightScore
+                    })
+                    .eq('game_id', gameState.gameId);
+            } catch (error) {
+                console.error('Score sync error:', error);
+            }
+        }
+
+        let gameUpdateInterval = null;
+
+        // Simple polling-based game updates (more reliable than subscriptions)
+        function startPollingGameUpdates() {
+            if (gameUpdateInterval) clearInterval(gameUpdateInterval);
+            
+            gameUpdateInterval = setInterval(async () => {
+                if (!gameState.gameId || gameState.gameMode !== 'multiplayer') return;
+
+                try {
+                    const { data: gameData } = await supabase
+                        .from('games')
+                        .select('*')
+                        .eq('game_id', gameState.gameId)
+                        .single();
+
+                    if (gameData) {
+                        if (!gameState.isLeftPaddle) {
+                            // Right player: receive ball from left player (left player is authority)
+                            pong.ball.x = gameData.ball_x;
+                            pong.ball.y = gameData.ball_y;
+                            pong.ball.vx = gameData.ball_vx;
+                            pong.ball.vy = gameData.ball_vy;
+                            pong.paddles.left.y = gameData.left_paddle_y;
+                        } else {
+                            // Left player: only receive right paddle position
+                            pong.paddles.right.y = gameData.right_paddle_y;
+                        }
+                        
+                        gameState.leftScore = gameData.left_score;
+                        gameState.rightScore = gameData.right_score;
+                    }
+                } catch (error) {
+                    console.error('Poll error:', error);
+                }
+            }, 40); // Poll every 40ms for smooth updates
+        }
+
+        // ===== UI FUNCTIONS =====
+        function showModeScreen() {
+            document.getElementById('modeScreen').style.display = 'block';
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            gameState.gameStarted = false;
+        }
+
+        function showTitleScreen() {
+            document.getElementById('modeScreen').style.display = 'none';
+            document.getElementById('titleScreen').style.display = 'block';
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            gameState.gameStarted = false;
+        }
+
+        function showWaitingScreen() {
+            document.getElementById('modeScreen').style.display = 'none';
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('waitingScreen').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+        }
+
+        function showGameScreen() {
+            document.getElementById('modeScreen').style.display = 'none';
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+        }
+
+        function syncUI() {
+            document.getElementById('leftPlayerName').textContent = gameState.isLeftPaddle ? gameState.playerName : gameState.opponentName;
+            document.getElementById('rightPlayerName').textContent = gameState.isLeftPaddle ? gameState.opponentName : gameState.playerName;
+            document.getElementById('leftScore').textContent = gameState.leftScore;
+            document.getElementById('rightScore').textContent = gameState.rightScore;
+            
+            // Update context banner based on game mode
+            const bannerText = gameState.gameMode === 'singleplayer'
+                ? 'Test your Pong skills against the AI! The ancient kingdoms will judge your prowess.'
+                : 'The Nile Valley competition: Every point is a victory in the eternal struggle for dominance.';
+            document.getElementById('contextBanner').textContent = bannerText;
+        }
+
+        function startSinglePlayer() {
+            gameState.gameMode = 'singleplayer';
+            gameState.playerName = document.getElementById('playerName').value.trim();
+            if (!gameState.playerName) {
+                document.getElementById('statusText').textContent = 'Please enter your name';
+                return;
+            }
+
+            gameState.gameStarted = true;
+            gameState.gameStartTime = Date.now();
+            gameState.lastSpeedIncrease = 0;
+            
+            // Resume audio context for user interaction
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // Load crowd audio when game starts
+            loadCrowdAudio();
+            
+            gameState.isLeftPaddle = true; // Player is always on the left
+            gameState.opponentName = 'AI Opponent';
+            
+            // Show game screen first so canvas is visible
+            showGameScreen();
+            
+            // Then initialize the game
+            try {
+                pong.init();
+                playStartSound();
+                syncUI();
+                gameLoop();
+            } catch (e) {
+                console.error('Error starting game:', e);
+                alert('Error starting game. Check console for details.');
+            }
+        }
+        // Mode selection
+        document.getElementById('multiplayerBtn').addEventListener('click', () => {
+            gameState.gameMode = 'multiplayer';
+            document.getElementById('startBtn').textContent = 'Find a Match';
+            document.getElementById('instructions-info').innerHTML = `
+                <h3>How to Play:</h3>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Left Paddle (Kush):</strong> W and S keys to move up and down</li>
+                    <li><strong>Right Paddle (Egypt):</strong> Up and Down arrow keys to move</li>
+                    <li>First player to defend their side and score wins points</li>
+                    <li>You'll have 10 minutes per class period to play</li>
+                </ul>
+            `;
+            showTitleScreen();
+        });
+
+        document.getElementById('singleplayerBtn').addEventListener('click', () => {
+            gameState.gameMode = 'singleplayer';
+            document.getElementById('startBtn').textContent = 'Start Game';
+            document.getElementById('instructions-info').innerHTML = `
+                <h3>How to Play:</h3>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Your Paddle (Kush):</strong> W and S keys to move up and down</li>
+                    <li>Compete against the AI opponent controlling Egypt</li>
+                    <li>Score by defending your side and hitting the ball back</li>
+                    <li>Test your skills in this 10-minute challenge!</li>
+                </ul>
+            `;
+            showTitleScreen();
+        });
+
+        document.getElementById('playerName').addEventListener('input', (e) => {
+            document.getElementById('startBtn').disabled = !e.target.value.trim();
+        });
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (gameState.gameMode === 'singleplayer') {
+                startSinglePlayer();
+            } else {
+                enterMatchmaking();
+            }
+        });
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            showModeScreen();
+        });
+
+        // Initialize with mode screen
+        window.addEventListener('load', () => {
+            showModeScreen();
+        });
+    </script>
+</body>
+</html>
