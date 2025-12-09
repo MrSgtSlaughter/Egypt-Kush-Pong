@@ -225,6 +225,49 @@
             margin-top: 15px;
         }
 
+        #modeScreen {
+            background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+            color: #1a1a2e;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #modeScreen h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .mode-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 30px;
+            background: #1a1a2e;
+            color: #d4af37;
+            border: 2px solid #1a1a2e;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            background: #16213e;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mode-button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
         @media (max-width: 600px) {
             #titleScreen h1 {
                 font-size: 1.8em;
@@ -255,8 +298,27 @@
 </head>
 <body>
     <div class="container">
+        <!-- Mode Selection Screen -->
+        <div id="modeScreen">
+            <h1>⚔️ Kush vs Egypt ⚔️</h1>
+            <p style="font-size: 1.2em; margin-bottom: 30px; opacity: 0.9;">Choose Your Challenge</p>
+            
+            <div class="mode-button-container">
+                <button id="singleplayerBtn" class="mode-btn">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🤖</div>
+                    <div>Single Player</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">Face the AI</div>
+                </button>
+                <button id="multiplayerBtn" class="mode-btn">
+                    <div style="font-size: 2em; margin-bottom: 10px;">👥</div>
+                    <div>Multiplayer</div>
+                    <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">Play with a Friend</div>
+                </button>
+            </div>
+        </div>
+
         <!-- Title Screen -->
-        <div id="titleScreen">
+        <div id="titleScreen" style="display: none;">
             <h1>⚔️ Kush vs Egypt ⚔️</h1>
             <p class="subtitle">A Pong Game About Ancient Rivalry</p>
             
@@ -293,14 +355,14 @@
 
             <div class="scoreboard">
                 <div class="player-info">
-                    <div class="player-label">🏜️ KUSH (You)</div>
+                    <div class="player-label">🏜️ KUSH</div>
                     <div class="player-name" id="playerDisplayName">Player</div>
                     <div class="score-display" id="leftScore">0</div>
                 </div>
                 <div class="divider">VS</div>
                 <div class="player-info">
-                    <div class="player-label">🏛️ EGYPT (AI)</div>
-                    <div class="player-name">Computer</div>
+                    <div class="player-label" id="rightPlayerLabel">🏛️ EGYPT (AI)</div>
+                    <div class="player-name" id="rightPlayerName">Computer</div>
                     <div class="score-display" id="rightScore">0</div>
                 </div>
             </div>
@@ -320,6 +382,7 @@
             leftScore: 0,
             rightScore: 0,
             gameStarted: false,
+            gameMode: null, // 'single' or 'multi'
             gameStartTime: null,
             elapsedSeconds: 0,
             isPaused: false,
@@ -329,7 +392,7 @@
 
         // ===== AI OPPONENT =====
         const ai = {
-            difficulty: 0.35, // Easy AI - kids can beat it
+            difficulty: 0.42, // Slightly raised from 0.35
             reactionTime: 0,
             targetY: 200,
             
@@ -715,9 +778,17 @@
         });
 
         function updatePaddleInput() {
+            // Left paddle (always controlled by player in single/multi)
             if (keys['w'] || keys['W']) pong.paddles.left.vy = -pong.paddles.left.speed;
             else if (keys['s'] || keys['S']) pong.paddles.left.vy = pong.paddles.left.speed;
             else pong.paddles.left.vy = 0;
+
+            // Right paddle - controlled by player in multiplayer, AI in single player
+            if (gameState.gameMode === 'multi') {
+                if (keys['ArrowUp']) pong.paddles.right.vy = -pong.paddles.right.speed;
+                else if (keys['ArrowDown']) pong.paddles.right.vy = pong.paddles.right.speed;
+                else pong.paddles.right.vy = 0;
+            }
         }
 
         // ===== GAME LOOP =====
@@ -727,8 +798,14 @@
                 
                 const minutes = Math.floor(gameState.elapsedSeconds / 60);
                 const seconds = gameState.elapsedSeconds % 60;
-                document.getElementById('gameInfo').textContent = 
-                    `${minutes}:${seconds.toString().padStart(2, '0')} • Use W/S to move your paddle`;
+                
+                let instructions = '';
+                if (gameState.gameMode === 'single') {
+                    instructions = `${minutes}:${seconds.toString().padStart(2, '0')} • Use W/S to move your paddle`;
+                } else {
+                    instructions = `${minutes}:${seconds.toString().padStart(2, '0')} • Left: W/S | Right: UP/DOWN`;
+                }
+                document.getElementById('gameInfo').textContent = instructions;
             }
             
             if (gameState.isPaused) {
@@ -772,7 +849,11 @@
             }
             
             updatePaddleInput();
-            ai.update(pong.ball.x, pong.ball.y, pong.paddles.right.y);
+            
+            // Only use AI in single-player mode
+            if (gameState.gameMode === 'single') {
+                ai.update(pong.ball.x, pong.ball.y, pong.paddles.right.y);
+            }
             
             pong.update();
             pong.draw();
@@ -784,6 +865,44 @@
         }
 
         // ===== UI EVENT LISTENERS =====
+        
+        // Mode selection buttons
+        document.getElementById('singleplayerBtn').addEventListener('click', () => {
+            gameState.gameMode = 'single';
+            document.getElementById('modeScreen').style.display = 'none';
+            document.getElementById('titleScreen').style.display = 'block';
+            
+            // Update title screen for single player
+            document.querySelector('#titleScreen .instructions').innerHTML = `
+                <h3>How to Play:</h3>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Your Paddle (Kush):</strong> W and S keys to move up and down</li>
+                    <li><strong>AI Opponent (Egypt):</strong> Computer controls the right paddle</li>
+                    <li>Score points by defending your side and hitting the ball back</li>
+                    <li>Try to beat the AI and set a high score!</li>
+                </ul>
+            `;
+            document.getElementById('startBtn').textContent = 'Start Game';
+        });
+
+        document.getElementById('multiplayerBtn').addEventListener('click', () => {
+            gameState.gameMode = 'multi';
+            document.getElementById('modeScreen').style.display = 'none';
+            document.getElementById('titleScreen').style.display = 'block';
+            
+            // Update title screen for multiplayer
+            document.querySelector('#titleScreen .instructions').innerHTML = `
+                <h3>How to Play (Two Players):</h3>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Left Paddle (Kush):</strong> W and S keys to move up and down</li>
+                    <li><strong>Right Paddle (Egypt):</strong> UP and DOWN arrow keys to move</li>
+                    <li>Score points by defending your side and hitting the ball back</li>
+                    <li>Compete with a friend on the same keyboard!</li>
+                </ul>
+            `;
+            document.getElementById('startBtn').textContent = 'Start Game';
+        });
+
         document.getElementById('playerName').addEventListener('input', (e) => {
             document.getElementById('startBtn').disabled = !e.target.value.trim();
         });
@@ -802,13 +921,32 @@
                 audioContext.resume();
             }
             
+            // Update UI based on game mode
             document.getElementById('playerDisplayName').textContent = gameState.playerName;
+            
+            if (gameState.gameMode === 'single') {
+                document.getElementById('rightPlayerLabel').textContent = '🏛️ EGYPT (AI)';
+                document.getElementById('rightPlayerName').textContent = 'Computer';
+                document.querySelector('.historical-banner').textContent = 'Test your Pong skills against the AI! The ancient kingdoms will judge your prowess.';
+            } else {
+                document.getElementById('rightPlayerLabel').textContent = '🏛️ EGYPT';
+                document.getElementById('rightPlayerName').textContent = 'Player 2';
+                document.querySelector('.historical-banner').textContent = 'Two players compete for supremacy! W/S vs UP/DOWN - who will claim the Nile Valley?';
+            }
+            
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
             
             pong.init();
             playStartSound();
             gameLoop();
+        });
+
+        // Initialize with mode screen on load
+        window.addEventListener('load', () => {
+            document.getElementById('modeScreen').style.display = 'block';
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
         });
     </script>
 </body>
