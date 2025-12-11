@@ -344,6 +344,14 @@
             <div class="status-text" id="statusText"></div>
         </div>
 
+        <!-- Goal Video Screen -->
+        <div id="goalVideoScreen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center;">
+            <video id="goalVideo" width="800" height="450" style="border: 3px solid #d4af37; border-radius: 10px; max-width: 90vw;" autoplay>
+                <source src="goal.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
         <!-- Game Screen -->
         <div id="gameScreen">
             <div class="game-header">
@@ -389,6 +397,7 @@
             pauseStartTime: null,
             lastScorer: null,
             lastSpeedIncrease: 0, // Track when ball speed last increased
+            goalVideoPlaying: false, // Track if goal video is playing
         };
 
         // ===== AI OPPONENT =====
@@ -569,8 +578,7 @@
                     if (!this.scoreRegistered) {
                         gameState.rightScore++;
                         gameState.lastScorer = 'right';
-                        gameState.isPaused = true;
-                        gameState.pauseStartTime = Date.now();
+                        showGoalVideo();
                         playCrowdSound();
                         this.scoreRegistered = true;
                     }
@@ -578,8 +586,7 @@
                     if (!this.scoreRegistered) {
                         gameState.leftScore++;
                         gameState.lastScorer = 'left';
-                        gameState.isPaused = true;
-                        gameState.pauseStartTime = Date.now();
+                        showGoalVideo();
                         playCrowdSound();
                         this.scoreRegistered = true;
                     }
@@ -793,6 +800,23 @@
             }
         }
 
+        // ===== GOAL VIDEO HANDLER =====
+        function showGoalVideo() {
+            gameState.goalVideoPlaying = true;
+            const goalVideoScreen = document.getElementById('goalVideoScreen');
+            const goalVideo = document.getElementById('goalVideo');
+            
+            goalVideoScreen.style.display = 'flex';
+            goalVideo.currentTime = 0;
+            goalVideo.play();
+            
+            goalVideo.onended = function() {
+                goalVideoScreen.style.display = 'none';
+                gameState.goalVideoPlaying = false;
+                pong.resetBall();
+            };
+        }
+
         // ===== GAME LOOP =====
         function gameLoop() {
             if (gameState.gameStartTime) {
@@ -817,6 +841,12 @@
                     instructions = `${minutes}:${seconds.toString().padStart(2, '0')} • Left: W/S | Right: UP/DOWN`;
                 }
                 document.getElementById('gameInfo').textContent = instructions;
+            }
+            
+            if (gameState.goalVideoPlaying) {
+                // Skip game updates while goal video is playing
+                requestAnimationFrame(gameLoop);
+                return;
             }
             
             if (gameState.isPaused) {
